@@ -90,6 +90,11 @@ export default function SeasonDashboard() {
   }, []);
 
   const p = performance;
+  const formSequence: string[] = Array.isArray(p?.recent_form)
+    ? p.recent_form
+    : (p?.recent_form as any)?.sequence || ["W"];
+  const gpm = p?.goals_for_per_match ?? p?.goals_per_match ?? "—";
+  const gcpm = p?.goals_against_per_match ?? p?.goals_conceded_per_match ?? "—";
 
   return (
     <Shell
@@ -122,7 +127,7 @@ export default function SeasonDashboard() {
               Recent Form (Last 5)
             </span>
             <div className="flex items-center space-x-1.5">
-              {p?.recent_form?.map((result, idx) => (
+              {formSequence.map((result, idx) => (
                 <span
                   key={idx}
                   className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold font-mono text-xs text-white shadow-sm ${
@@ -167,14 +172,14 @@ export default function SeasonDashboard() {
         <KpiCard
           label="Goals Scored"
           value={p?.goals_for}
-          subtext={`GPM: ${p?.goals_per_match ?? "—"}`}
+          subtext={`GPM: ${gpm}`}
           icon={Target}
           accent="blue"
         />
         <KpiCard
           label="Goals Conceded"
           value={p?.goals_against}
-          subtext={`GCPM: ${p?.goals_conceded_per_match ?? "—"}`}
+          subtext={`GCPM: ${gcpm}`}
           icon={Flame}
           accent="amber"
         />
