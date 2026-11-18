@@ -20,6 +20,10 @@ dependencies = [
     "beautifulsoup4>=4.12.0",
     "pandera>=0.20.0",
     "click>=8.1.0",
+    "mplsoccer>=1.8.0",
+    "matplotlib>=3.8.0",
+    "scipy>=1.14.0",
+    "scikit-learn>=1.5.0",
 ]
 
 [project.optional-dependencies]

@@ -295,4 +295,76 @@ python -m marina.cli quality-report
 
 ---
 
-*Ready for Step 3: Match Center, Historical Performance Analytics & Visualizations.*
+## 8. Step 3: Football Analytics & Performance Intelligence Engine
+
+Step 3 delivers a high-performance, modular analytics engine for Chennaiyin FC and the ISL 2026–27 season across six specialized intelligence modules.
+
+### The Six Analytics Modules
+1. **Team Performance & Form Analytics (`TeamPerformanceEngine`):**
+   - Matches played, wins, draws, losses, points, goal difference, win %, points per match (PPM), goals per match, clean sheets.
+   - Home vs. away venue splits and recent form sequence (e.g. `['W', 'W', 'D']`).
+2. **Attacking Analytics & Shot Quality (`AttackingAnalyticsEngine`):**
+   - Shots total, on target, off target, blocked shots, shooting accuracy %, conversion rate %.
+   - Expected goals ($xG$), expected goals per match, and shot efficiency (goals scored minus $xG$).
+   - Goal timing half-by-half breakdown (1st vs 2nd half) and ranked player goal contribution distributions.
+3. **Defensive Resilience & Discipline (`DefensiveAnalyticsEngine`):**
+   - Goals conceded, goals conceded per match, clean sheets, clean sheet %.
+   - Tackles total, tackles won, tackle success %, interceptions, clearances, saves, blocked shots.
+   - Total defensive actions ($TDA$) and per-match volume.
+   - Disciplinary index: $\text{Yellows} \times 1 + \text{Reds} \times 3$.
+   - Expected goals conceded ($xGA$) strictly when tracked.
+4. **Player Intelligence & Per-90 Standardizer (`PlayerIntelligenceEngine`):**
+   - Seasonal appearances, starts, substitute appearances, minutes played, goals, assists.
+   - Standardized per-90 metrics with sample size validation (suppressed when $\text{minutes} < 45$ to prevent statistical noise).
+   - Head-to-head comparison engine with normalized 5-dimension tactical radar (0–100 scale: *Scoring Threat, Shot Volume, Playmaking / Assists, Passing Output, Defensive Ball Winning*).
+5. **Match Intelligence & Tactical Reports (`MatchIntelligenceEngine`):**
+   - Single match tactical reports with side-by-side team statistics.
+   - Half-by-half comparative analysis (1st vs 2nd half scores, goal events, cards).
+   - Chronological event timeline with minute, stoppage, event type, and player attribution.
+   - Head-to-head ($H2H$) historical records between two competing clubs.
+6. **Tactical Analytics & Spatial Intelligence (`TacticalAnalyticsEngine`):**
+   - Standard FIFA / ISL pitch models ($105.0\text{m} \times 68.0\text{m}$) using `mplsoccer`.
+   - Distance and shooting angle subtended by goalposts from any $(x, y)$ coordinate.
+   - Progressive pass classification (Opta / Wyscout criteria: $\ge 10\text{m}$ progression or penalty box penetration, excluding defensive 40%).
+   - Passing network graph with average player positions and network density.
+   - Spatial shot maps with $(x, y)$ coordinates, distance, angle, and $xG$.
+   - Field Tilt calculation for territorial attacking dominance ($>60\%$ `HIGH`, $45-59\%$ `BALANCED`, $<45\%$ `DEFENSIVE`).
+
+---
+
+### Step 3 REST API Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/analytics/teams/{team_id}/season/{season_id}` | Team seasonal performance, splits, and form |
+| `GET` | `/api/v1/analytics/teams/{team_id}/attacking` | Team attacking volume, conversion, and $xG$ efficiency |
+| `GET` | `/api/v1/analytics/teams/{team_id}/defensive` | Team defensive resilience, clean sheets, and discipline |
+| `GET` | `/api/v1/analytics/players/{player_id}/performance` | Player performance totals and standardized per-90 metrics |
+| `POST` | `/api/v1/analytics/players/compare` | Head-to-head player comparison and 5-dimension radar |
+| `GET` | `/api/v1/analytics/matches/{match_id}/report` | Single-match tactical report, side-by-side stats, timeline |
+| `GET` | `/api/v1/analytics/tactical/passing-network/{match_id}/team/{team_id}` | Tactical passing network graph with density |
+| `GET` | `/api/v1/analytics/tactical/shot-map/{match_id}` | Spatial shot map with distances, angles, and outcomes |
+
+---
+
+## 9. Step 3 Acceptance Checklist Verification
+
+| Checklist Item | Status | Evidence / Verification Test |
+| :--- | :---: | :--- |
+| **Existing database integration verified** | **PASSED** | Integrates directly with Step 1 and Step 2 normalized schema and models. |
+| **Team performance calculations implemented** | **PASSED** | Validated in `test_team_performance_analytics.py`. |
+| **Attacking analytics implemented** | **PASSED** | Validated in `test_attacking_analytics.py`. |
+| **Defensive analytics implemented** | **PASSED** | Validated in `test_defensive_analytics.py`. |
+| **Player performance analytics implemented** | **PASSED** | Validated in `test_player_intelligence.py`. |
+| **Per-90 calculations tested** | **PASSED** | Validated with sample size thresholding in `test_player_intelligence.py`. |
+| **Player comparison engine implemented** | **PASSED** | Validated with 5-dimension radar scores in `test_player_intelligence.py`. |
+| **Match analytics implemented** | **PASSED** | Validated with half-by-half analysis in `test_match_intelligence.py`. |
+| **Tactical algorithms implemented** | **PASSED** | Validated with `mplsoccer`, progressive passes, passing networks in `test_tactical_analytics.py`. |
+| **Missing-data handling implemented** | **PASSED** | Validated across all test modules (preserves `None`, prevents zero division). |
+| **Analytics API endpoints tested** | **PASSED** | 9 endpoint integration tests passing in `test_analytics_api_endpoints.py`. |
+| **Automated Pytest suite passing** | **PASSED** | **59/59 automated unit and integration tests passing.** |
+| **Metric documentation completed** | **PASSED** | Detailed mathematical formulas documented in `docs/METRICS_FORMULAS.md`. |
+
+---
+
+*Ready for Step 4: Next.js Frontend Dashboard, Pitch Visualizations & Interactive Match Center.*

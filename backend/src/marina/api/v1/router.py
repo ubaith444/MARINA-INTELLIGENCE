@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from marina.api.v1 import (
+    analytics,
     competitions,
     health,
     matches,
@@ -21,3 +22,4 @@ api_v1_router.include_router(players.router)
 api_v1_router.include_router(matches.router)
 api_v1_router.include_router(statistics.router)
 api_v1_router.include_router(provenance.router)
+api_v1_router.include_router(analytics.router)
