@@ -2,6 +2,7 @@
 
 import uuid
 from collections import defaultdict
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,17 +33,25 @@ class AttackingAnalyticsEngine:
             raise ValueError(f"Team {team_id} not found.")
 
         # Query team match statistics
-        stat_stmt = select(TeamMatchStatistic).join(Match).where(
-            TeamMatchStatistic.team_id == team_id,
-            Match.match_status == MatchStatus.FINISHED,
+        stat_stmt = (
+            select(TeamMatchStatistic)
+            .join(Match)
+            .where(
+                TeamMatchStatistic.team_id == team_id,
+                Match.match_status == MatchStatus.FINISHED,
+            )
+            .options(
+                selectinload(TeamMatchStatistic.match).selectinload(Match.home_team),
+                selectinload(TeamMatchStatistic.match).selectinload(Match.away_team),
+            )
         )
         if season_id:
             stat_stmt = stat_stmt.where(Match.season_id == season_id)
-        stat_stmt = stat_stmt.options(selectinload(TeamMatchStatistic.match))
+        stat_stmt = stat_stmt.order_by(Match.scheduled_kickoff.asc())
 
         stats: List[TeamMatchStatistic] = list((await self.session.execute(stat_stmt)).scalars().all())
-
         matches_count = len(stats)
+        match_ids = [s.match_id for s in stats]
 
         # 1. Aggregation of Shot Volume
         shots_total = sum(s.shots_total for s in stats if s.shots_total is not None)
@@ -59,25 +68,49 @@ class AttackingAnalyticsEngine:
         big_chances_created = sum(s.big_chances_created for s in stats if s.big_chances_created is not None)
         big_chances_missed = sum(s.big_chances_missed for s in stats if s.big_chances_missed is not None)
 
-        # 4. Fetch Goals and Events for the Team
-        event_stmt = select(MatchEvent).join(Match).where(
-            MatchEvent.team_id == team_id,
-            MatchEvent.event_type.in_([EventType.GOAL, EventType.PENALTY_GOAL]),
-            Match.match_status == MatchStatus.FINISHED,
-        )
-        if season_id:
-            event_stmt = event_stmt.where(Match.season_id == season_id)
-        event_stmt = event_stmt.options(
-            selectinload(MatchEvent.primary_player),
-            selectinload(MatchEvent.secondary_player),
-        )
+        # 4. Goals by Match & Total Goals
+        goals_by_match: List[Dict[str, Any]] = []
+        match_goals_sum = 0
+        for s in stats:
+            m = s.match
+            if not m:
+                continue
+            is_home = m.home_team_id == team_id
+            opponent = m.away_team if is_home else m.home_team
+            t_score = (m.home_score if is_home else m.away_score) or 0
+            match_goals_sum += t_score
+            goals_by_match.append({
+                "match_id": str(m.id),
+                "match_number": m.match_number,
+                "opponent_name": opponent.name if opponent else "Opponent",
+                "opponent_short": opponent.short_name if opponent else "OPP",
+                "goals": t_score,
+                "kickoff": m.scheduled_kickoff.isoformat(),
+            })
 
-        goal_events: List[MatchEvent] = list((await self.session.execute(event_stmt)).scalars().all())
-        total_goals = len(goal_events)
+        # 5. Fetch Goals and Events for the Team
+        goal_events: List[MatchEvent] = []
+        if match_ids:
+            event_stmt = (
+                select(MatchEvent)
+                .where(
+                    MatchEvent.team_id == team_id,
+                    MatchEvent.match_id.in_(match_ids),
+                    MatchEvent.event_type.in_([EventType.GOAL, EventType.PENALTY_GOAL]),
+                )
+                .options(
+                    selectinload(MatchEvent.primary_player),
+                    selectinload(MatchEvent.secondary_player),
+                )
+            )
+            goal_events = list((await self.session.execute(event_stmt)).scalars().all())
+
+        total_goals = len(goal_events) if goal_events else match_goals_sum
 
         # Half-by-half breakdown
         first_half_goals = sum(1 for e in goal_events if e.period == MatchPeriod.FIRST_HALF)
         second_half_goals = sum(1 for e in goal_events if e.period == MatchPeriod.SECOND_HALF)
+        extra_time_goals = sum(1 for e in goal_events if e.period in [MatchPeriod.EXTRA_FIRST, MatchPeriod.EXTRA_SECOND])
 
         # Shooting accuracy & conversion
         shooting_accuracy_pct = safe_divide(shots_on_target * 100.0, shots_total)
@@ -116,6 +149,8 @@ class AttackingAnalyticsEngine:
             })
         contributions.sort(key=lambda x: (x["goal_contributions"], x["goals"]), reverse=True)
 
+        total_assists = sum(player_assists.values()) if player_assists else None
+
         coverage = DataCoverageMetrics(
             sample_matches_count=matches_count,
             minutes_tracked=matches_count * 90,
@@ -128,6 +163,7 @@ class AttackingAnalyticsEngine:
         return {
             "team_id": str(team.id),
             "team_name": team.name,
+            "season_id": str(season_id) if season_id else None,
             "matches_analyzed": matches_count,
             "goals_scored": total_goals,
             "goals_per_match": safe_divide(total_goals, matches_count),
@@ -141,6 +177,7 @@ class AttackingAnalyticsEngine:
             "expected_goals": total_xg,
             "expected_goals_per_match": xg_per_match,
             "shot_efficiency": shot_efficiency,
+            "total_assists": total_assists,
             "big_chances_created": big_chances_created if big_chances_created > 0 else None,
             "big_chances_missed": big_chances_missed if big_chances_missed > 0 else None,
             "half_breakdown": {
@@ -149,6 +186,14 @@ class AttackingAnalyticsEngine:
                 "first_half_pct": safe_divide(first_half_goals * 100.0, total_goals),
                 "second_half_pct": safe_divide(second_half_goals * 100.0, total_goals),
             },
+            "goals_by_competition_phase": {
+                "first_half_goals": first_half_goals,
+                "second_half_goals": second_half_goals,
+                "extra_time_goals": extra_time_goals,
+            },
+            "goals_by_match": goals_by_match,
+            "goals_by_player": contributions,
             "top_contributors": contributions[:10],
             "data_coverage": coverage.to_dict(),
+            "calculated_at": datetime.now(timezone.utc).isoformat(),
         }

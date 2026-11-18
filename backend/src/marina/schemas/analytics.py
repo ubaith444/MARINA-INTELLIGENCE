@@ -27,6 +27,8 @@ class RecordSplitSchema(BaseSchema):
     clean_sheets: int
     win_percentage: Optional[float] = None
     points_per_match: Optional[float] = None
+    goals_for_per_match: Optional[float] = None
+    goals_against_per_match: Optional[float] = None
 
 
 class RecentFormMatchSchema(BaseSchema):
@@ -68,15 +70,34 @@ class TeamSeasonPerformanceResponse(BaseSchema):
     clean_sheet_percentage: Optional[float] = None
     goals_for_per_match: Optional[float] = None
     goals_against_per_match: Optional[float] = None
+    average_possession_pct: Optional[float] = None
     home_record: RecordSplitSchema
     away_record: RecordSplitSchema
     recent_form: RecentFormSchema
     data_coverage: DataCoverageSchema
+    calculated_at: Optional[str] = None
+
+
+class HomeAwayComparisonSchema(BaseSchema):
+    point_ratio_home_to_away: Optional[float] = None
+    win_pct_delta: Optional[float] = None
+    home_advantage_index: Optional[float] = None
+
+
+class HomeAwayAnalyticsResponse(BaseSchema):
+    team_id: str
+    team_name: str
+    season_id: Optional[str] = None
+    home_record: Dict[str, Any]
+    away_record: Dict[str, Any]
+    comparison: HomeAwayComparisonSchema
+    calculated_at: str
 
 
 class AttackingAnalyticsResponse(BaseSchema):
     team_id: str
     team_name: str
+    season_id: Optional[str] = None
     matches_analyzed: int
     goals_scored: int
     goals_per_match: Optional[float] = None
@@ -90,16 +111,22 @@ class AttackingAnalyticsResponse(BaseSchema):
     expected_goals: Optional[float] = None
     expected_goals_per_match: Optional[float] = None
     shot_efficiency: Optional[float] = None
+    total_assists: Optional[int] = None
     big_chances_created: Optional[int] = None
     big_chances_missed: Optional[int] = None
     half_breakdown: Dict[str, Any]
+    goals_by_competition_phase: Dict[str, Any] = {}
+    goals_by_match: List[Dict[str, Any]] = []
+    goals_by_player: List[Dict[str, Any]] = []
     top_contributors: List[Dict[str, Any]]
     data_coverage: DataCoverageSchema
+    calculated_at: Optional[str] = None
 
 
 class DefensiveAnalyticsResponse(BaseSchema):
     team_id: str
     team_name: str
+    season_id: Optional[str] = None
     matches_analyzed: int
     goals_conceded: int
     goals_conceded_per_match: Optional[float] = None
@@ -121,7 +148,83 @@ class DefensiveAnalyticsResponse(BaseSchema):
     yellow_cards: int
     red_cards: int
     discipline_index: int
+    defensive_by_match: List[Dict[str, Any]] = []
     data_coverage: DataCoverageSchema
+    calculated_at: Optional[str] = None
+
+
+class PassingByMatchSchema(BaseSchema):
+    match_id: str
+    match_number: Optional[int] = None
+    opponent_name: str
+    opponent_short: str
+    is_home: bool
+    passes_total: Optional[int] = None
+    passes_completed: Optional[int] = None
+    failed_passes: Optional[int] = None
+    pass_accuracy_pct: Optional[float] = None
+    possession_pct: Optional[float] = None
+
+
+class PassingAnalyticsResponse(BaseSchema):
+    team_id: str
+    team_name: str
+    season_id: Optional[str] = None
+    matches_analyzed: int
+    total_passes: Optional[int] = None
+    successful_passes: Optional[int] = None
+    failed_passes: Optional[int] = None
+    passing_accuracy_pct: Optional[float] = None
+    average_possession_pct: Optional[float] = None
+    passing_by_match: List[PassingByMatchSchema] = []
+    data_coverage: DataCoverageSchema
+    calculated_at: str
+
+
+class MatchTrendItemSchema(BaseSchema):
+    match_id: str
+    match_number: Optional[int] = None
+    date: str
+    opponent_name: str
+    opponent_short: str
+    is_home: bool
+    score: str
+    outcome: str
+    points: int
+    goals_for: int
+    goals_against: int
+
+
+class PointsProgressionItemSchema(BaseSchema):
+    match_number: Optional[int] = None
+    date: str
+    opponent: str
+    points_earned: int
+    cumulative_points: int
+
+
+class RollingTrendItemSchema(BaseSchema):
+    match_number: Optional[int] = None
+    match_id: str
+    date: str
+    rolling_goals_for_avg: Optional[float] = None
+    rolling_goals_against_avg: Optional[float] = None
+    rolling_points_per_match: Optional[float] = None
+
+
+class PerformanceTrendsResponse(BaseSchema):
+    team_id: str
+    team_name: str
+    season_id: Optional[str] = None
+    matches_analyzed: int
+    last_five_matches: List[MatchTrendItemSchema] = []
+    match_by_match_results: List[MatchTrendItemSchema] = []
+    monthly_goals_scored: Dict[str, int] = {}
+    monthly_goals_conceded: Dict[str, int] = {}
+    points_progression: List[PointsProgressionItemSchema] = []
+    rolling_trends: List[RollingTrendItemSchema] = []
+    data_coverage: DataCoverageSchema
+    calculated_at: str
 
 
 class PlayerPer90Schema(BaseSchema):

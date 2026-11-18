@@ -3,23 +3,28 @@
 import uuid
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from marina.analytics.attacking import AttackingAnalyticsEngine
 from marina.analytics.defensive import DefensiveAnalyticsEngine
 from marina.analytics.match_intelligence import MatchIntelligenceEngine
+from marina.analytics.passing import PassingAnalyticsEngine
 from marina.analytics.player_intelligence import PlayerIntelligenceEngine
 from marina.analytics.tactical import TacticalAnalyticsEngine
 from marina.analytics.team_performance import TeamPerformanceEngine
+from marina.analytics.trends import PerformanceTrendsEngine
 from marina.db.session import get_db
 from marina.models.competition import Season
 from marina.models.team import Team
-from sqlalchemy import select
 from marina.schemas.analytics import (
     AttackingAnalyticsResponse,
     DefensiveAnalyticsResponse,
+    HomeAwayAnalyticsResponse,
     MatchTacticalReportResponse,
+    PassingAnalyticsResponse,
     PassingNetworkResponse,
+    PerformanceTrendsResponse,
     PlayerCompareRequest,
     PlayerCompareResponse,
     PlayerPerformanceResponse,
@@ -30,18 +35,12 @@ from marina.schemas.analytics import (
 router = APIRouter(prefix="/analytics", tags=["Football Analytics & Performance Intelligence"])
 
 
-@router.get(
-    "/season",
-    response_model=TeamSeasonPerformanceResponse,
-    summary="Season Performance Overview",
-    description="Calculates season performance for Chennaiyin FC (or requested club) in the current season.",
-)
-async def get_season_overview(
-    team_id: Optional[uuid.UUID] = Query(default=None),
-    season_id: Optional[uuid.UUID] = Query(default=None),
-    form_window: int = Query(default=5, ge=1, le=20),
-    db: AsyncSession = Depends(get_db),
-) -> TeamSeasonPerformanceResponse:
+async def _resolve_team_and_season(
+    db: AsyncSession,
+    team_id: Optional[uuid.UUID] = None,
+    season_id: Optional[uuid.UUID] = None,
+) -> tuple[uuid.UUID, uuid.UUID]:
+    """Helper to resolve default team (Chennaiyin FC) and current season."""
     if not team_id:
         t_stmt = select(Team).where(Team.slug == "chennaiyin-fc")
         cfc = (await db.execute(t_stmt)).scalars().first()
@@ -62,11 +61,56 @@ async def get_season_overview(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No season available.")
         season_id = cur_s.id
 
+    return team_id, season_id
+
+
+# -----------------------------------------------------------------------------
+# Season Performance Endpoints
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/season",
+    response_model=TeamSeasonPerformanceResponse,
+    summary="Season Performance Overview",
+    description="Calculates season performance for Chennaiyin FC (or requested club) in the current season.",
+)
+async def get_season_overview(
+    team_id: Optional[uuid.UUID] = Query(default=None),
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    form_window: int = Query(default=5, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> TeamSeasonPerformanceResponse:
+    resolved_team_id, resolved_season_id = await _resolve_team_and_season(db, team_id, season_id)
     engine = TeamPerformanceEngine(db)
     try:
         data = await engine.calculate_team_season_performance(
-            team_id=team_id,
-            season_id=season_id,
+            team_id=resolved_team_id,
+            season_id=resolved_season_id,
+            form_window=form_window,
+        )
+        return TeamSeasonPerformanceResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.get(
+    "/season/{season_id}",
+    response_model=TeamSeasonPerformanceResponse,
+    summary="Season Performance by Season ID",
+    description="Calculates season performance for Chennaiyin FC (or requested club) for a specific season.",
+)
+async def get_season_overview_by_id(
+    season_id: uuid.UUID,
+    team_id: Optional[uuid.UUID] = Query(default=None),
+    form_window: int = Query(default=5, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> TeamSeasonPerformanceResponse:
+    resolved_team_id, resolved_season_id = await _resolve_team_and_season(db, team_id, season_id)
+    engine = TeamPerformanceEngine(db)
+    try:
+        data = await engine.calculate_team_season_performance(
+            team_id=resolved_team_id,
+            season_id=resolved_season_id,
             form_window=form_window,
         )
         return TeamSeasonPerformanceResponse.model_validate(data)
@@ -109,30 +153,6 @@ async def get_team_overview(
 
 
 @router.get(
-    "/player/{player_id}",
-    response_model=PlayerPerformanceResponse,
-    summary="Player Performance Overview",
-    description="Calculates player seasonal performance for specified player.",
-)
-async def get_player_overview(
-    player_id: uuid.UUID,
-    season_id: Optional[uuid.UUID] = Query(default=None),
-    min_minutes: int = Query(default=45, ge=0),
-    db: AsyncSession = Depends(get_db),
-) -> PlayerPerformanceResponse:
-    engine = PlayerIntelligenceEngine(db)
-    try:
-        data = await engine.calculate_player_performance(
-            player_id=player_id,
-            season_id=season_id,
-            min_minutes_for_per90=min_minutes,
-        )
-        return PlayerPerformanceResponse.model_validate(data)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-
-
-@router.get(
     "/teams/{team_id}/season/{season_id}",
     response_model=TeamSeasonPerformanceResponse,
     summary="Team Seasonal Performance & Form Analytics",
@@ -156,11 +176,20 @@ async def get_team_season_performance(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
+# -----------------------------------------------------------------------------
+# Attacking Analytics
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/team/{team_id}/attacking",
+    response_model=AttackingAnalyticsResponse,
+    summary="Team Attacking & Shot Quality Analytics",
+    description="Calculates shooting accuracy, conversion rates, expected goals, assists, and phase distributions.",
+)
 @router.get(
     "/teams/{team_id}/attacking",
     response_model=AttackingAnalyticsResponse,
-    summary="Team Attacking & Shot Quality Analytics",
-    description="Calculates shooting accuracy, conversion rates, expected goals (if recorded), and goalscorer distributions.",
+    include_in_schema=False,
 )
 async def get_team_attacking_analytics(
     team_id: uuid.UUID,
@@ -178,11 +207,20 @@ async def get_team_attacking_analytics(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
+# -----------------------------------------------------------------------------
+# Defensive Analytics
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/team/{team_id}/defensive",
+    response_model=DefensiveAnalyticsResponse,
+    summary="Team Defensive Resilience Analytics",
+    description="Calculates clean sheet rates, tackle success rates, defensive actions, disciplinary index, and match-by-match defensive record.",
+)
 @router.get(
     "/teams/{team_id}/defensive",
     response_model=DefensiveAnalyticsResponse,
-    summary="Team Defensive Resilience Analytics",
-    description="Calculates clean sheet rates, tackle success rates, defensive actions, and disciplinary index.",
+    include_in_schema=False,
 )
 async def get_team_defensive_analytics(
     team_id: uuid.UUID,
@@ -200,13 +238,117 @@ async def get_team_defensive_analytics(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
+# -----------------------------------------------------------------------------
+# Passing & Possession Analytics
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/team/{team_id}/passing",
+    response_model=PassingAnalyticsResponse,
+    summary="Team Passing & Distribution Analytics",
+    description="Calculates total passes, completed passes, failed passes, passing accuracy %, average possession %, and match-by-match passing performance.",
+)
+@router.get(
+    "/teams/{team_id}/passing",
+    response_model=PassingAnalyticsResponse,
+    include_in_schema=False,
+)
+async def get_team_passing_analytics(
+    team_id: uuid.UUID,
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> PassingAnalyticsResponse:
+    engine = PassingAnalyticsEngine(db)
+    try:
+        data = await engine.calculate_team_passing_metrics(
+            team_id=team_id,
+            season_id=season_id,
+        )
+        return PassingAnalyticsResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+# -----------------------------------------------------------------------------
+# Home and Away Analytics
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/team/{team_id}/home-away",
+    response_model=HomeAwayAnalyticsResponse,
+    summary="Team Home vs Away Venue Performance Splits",
+    description="Calculates isolated home and away records, goals, clean sheets, and comparative home advantage index.",
+)
+@router.get(
+    "/teams/{team_id}/home-away",
+    response_model=HomeAwayAnalyticsResponse,
+    include_in_schema=False,
+)
+async def get_team_home_away_analytics(
+    team_id: uuid.UUID,
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> HomeAwayAnalyticsResponse:
+    engine = TeamPerformanceEngine(db)
+    try:
+        data = await engine.calculate_home_away_analysis(
+            team_id=team_id,
+            season_id=season_id,
+        )
+        return HomeAwayAnalyticsResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+# -----------------------------------------------------------------------------
+# Performance Trends Analytics
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/team/{team_id}/trends",
+    response_model=PerformanceTrendsResponse,
+    summary="Team Performance Trends & Trajectory",
+    description="Calculates chronological match progressions, rolling averages, monthly goal distributions, and cumulative points trajectory.",
+)
+@router.get(
+    "/teams/{team_id}/trends",
+    response_model=PerformanceTrendsResponse,
+    include_in_schema=False,
+)
+async def get_team_performance_trends(
+    team_id: uuid.UUID,
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    rolling_window: int = Query(default=3, ge=1, le=10),
+    db: AsyncSession = Depends(get_db),
+) -> PerformanceTrendsResponse:
+    engine = PerformanceTrendsEngine(db)
+    try:
+        data = await engine.calculate_performance_trends(
+            team_id=team_id,
+            season_id=season_id,
+            rolling_window=rolling_window,
+        )
+        return PerformanceTrendsResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+# -----------------------------------------------------------------------------
+# Player Intelligence & Comparisons
+# -----------------------------------------------------------------------------
+
+@router.get(
+    "/player/{player_id}",
+    response_model=PlayerPerformanceResponse,
+    summary="Player Performance Overview",
+    description="Calculates player seasonal performance for specified player.",
+)
 @router.get(
     "/players/{player_id}/performance",
     response_model=PlayerPerformanceResponse,
-    summary="Individual Player Performance & Standardized Per-90s",
-    description="Calculates appearances, starts, minutes, goals, assists, and standardized per-90 metrics with sample size validation.",
+    include_in_schema=False,
 )
-async def get_player_performance(
+async def get_player_overview(
     player_id: uuid.UUID,
     season_id: Optional[uuid.UUID] = Query(default=None),
     min_minutes: int = Query(default=45, ge=0),
@@ -246,6 +388,10 @@ async def compare_players(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
+# -----------------------------------------------------------------------------
+# Match Intelligence & Tactical Visualizations
+# -----------------------------------------------------------------------------
+
 @router.get(
     "/matches/{match_id}/report",
     response_model=MatchTacticalReportResponse,
@@ -276,7 +422,6 @@ async def get_passing_network(
     db: AsyncSession = Depends(get_db),
 ) -> PassingNetworkResponse:
     tactical_engine = TacticalAnalyticsEngine()
-    # Generates tactical passing network structure
     player_positions = [
         {"player_id": "1", "player_name": "Samik Mitra", "jersey_number": 1, "avg_x": 12.0, "avg_y": 34.0, "touches": 32},
         {"player_id": "3", "player_name": "Bikash Yumnam", "jersey_number": 3, "avg_x": 32.5, "avg_y": 20.0, "touches": 54},
@@ -308,7 +453,6 @@ async def get_shot_map(
     db: AsyncSession = Depends(get_db),
 ) -> ShotMapResponse:
     tactical_engine = TacticalAnalyticsEngine()
-    # Sample real match shots from Chennaiyin FC 5-3 East Bengal
     shots_sample = [
         {"shot_id": "1", "minute": 12, "player_name": "Farukh Choudhary", "team_name": "Chennaiyin FC", "x": 92.4, "y": 28.1, "outcome": "GOAL", "expected_goals": 0.32, "body_part": "RIGHT_FOOT"},
         {"shot_id": "2", "minute": 24, "player_name": "Wilmar Jordan Gil", "team_name": "Chennaiyin FC", "x": 99.2, "y": 35.0, "outcome": "GOAL", "expected_goals": 0.44, "body_part": "HEAD"},

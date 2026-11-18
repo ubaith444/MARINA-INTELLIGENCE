@@ -8,9 +8,11 @@ from marina.analytics.common import (
 )
 from marina.analytics.defensive import DefensiveAnalyticsEngine
 from marina.analytics.match_intelligence import MatchIntelligenceEngine
+from marina.analytics.passing import PassingAnalyticsEngine
 from marina.analytics.player_intelligence import PlayerIntelligenceEngine
 from marina.analytics.tactical import TacticalAnalyticsEngine
 from marina.analytics.team_performance import TeamPerformanceEngine
+from marina.analytics.trends import PerformanceTrendsEngine
 
 __all__ = [
     "safe_divide",
@@ -19,6 +21,8 @@ __all__ = [
     "TeamPerformanceEngine",
     "AttackingAnalyticsEngine",
     "DefensiveAnalyticsEngine",
+    "PassingAnalyticsEngine",
+    "PerformanceTrendsEngine",
     "PlayerIntelligenceEngine",
     "MatchIntelligenceEngine",
     "TacticalAnalyticsEngine",
