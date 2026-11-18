@@ -1,0 +1,114 @@
+{
+  "source_code": "ISL_OFFICIAL",
+  "source_url": "https://www.indiansuperleague.com/results",
+  "extracted_at": "2026-11-18T06:17:44.327724+00:00",
+  "competition": "Indian Super League",
+  "competition_code": "ISL",
+  "season": "2026–27",
+  "results": [
+    {
+      "match_number": 7,
+      "kickoff": "2026-11-07T19:30:00+05:30",
+      "home_team": "Chennaiyin FC",
+      "away_team": "East Bengal FC",
+      "venue": "Jawaharlal Nehru Stadium (Marina Arena)",
+      "city": "Chennai",
+      "match_status": "FINISHED",
+      "home_score": 5,
+      "away_score": 3,
+      "attendance": 18450,
+      "events": [
+        {
+          "event_type": "GOAL",
+          "minute": 12,
+          "period": "FIRST_HALF",
+          "team": "Chennaiyin FC",
+          "player": "Farukh Choudhary",
+          "description": "Right-footed strike into bottom left"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 24,
+          "period": "FIRST_HALF",
+          "team": "Chennaiyin FC",
+          "player": "Wilmar Jordan Gil",
+          "description": "Header from corner delivery"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 29,
+          "period": "FIRST_HALF",
+          "team": "East Bengal FC",
+          "player": "Madih Talal",
+          "description": "Direct free kick"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 45,
+          "period": "FIRST_HALF",
+          "team": "Chennaiyin FC",
+          "player": "Lukas Brambilla",
+          "description": "Penalty converted"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 58,
+          "period": "SECOND_HALF",
+          "team": "East Bengal FC",
+          "player": "Dimitrios Diamantakos",
+          "description": "Low driven finish"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 67,
+          "period": "SECOND_HALF",
+          "team": "Chennaiyin FC",
+          "player": "Wilmar Jordan Gil",
+          "description": "Rebound tap-in"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 81,
+          "period": "SECOND_HALF",
+          "team": "East Bengal FC",
+          "player": "Cleiton Silva",
+          "description": "Header from cross"
+        },
+        {
+          "event_type": "GOAL",
+          "minute": 90,
+          "period": "SECOND_HALF",
+          "team": "Chennaiyin FC",
+          "player": "Irfan Yadwad",
+          "description": "Counter-attack breakaway finish"
+        }
+      ],
+      "team_statistics": {
+        "Chennaiyin FC": {
+          "possession_pct": 52.4,
+          "shots_total": 16,
+          "shots_on_target": 8,
+          "shots_off_target": 5,
+          "blocked_shots": 3,
+          "expected_goals": 2.85,
+          "corners": 6,
+          "fouls_committed": 11,
+          "yellow_cards": 2,
+          "red_cards": 0
+        },
+        "East Bengal FC": {
+          "possession_pct": 47.6,
+          "shots_total": 12,
+          "shots_on_target": 5,
+          "shots_off_target": 4,
+          "blocked_shots": 3,
+          "expected_goals": 1.72,
+          "corners": 4,
+          "fouls_committed": 14,
+          "yellow_cards": 3,
+          "red_cards": 0
+        }
+      }
+    }
+  ]
+}

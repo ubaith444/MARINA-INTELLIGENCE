@@ -39,6 +39,8 @@ class ImportHistoryBase(BaseSchema):
     records_failed: int = Field(default=0, ge=0)
     error_payload: Optional[str] = None
     checksum_hash: Optional[str] = None
+    source_url: Optional[str] = None
+    payload_path: Optional[str] = None
 
 
 class ImportHistoryCreate(ImportHistoryBase):

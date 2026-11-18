@@ -1,0 +1,10 @@
+{
+  "source_code": "ISL_OFFICIAL",
+  "entity_type": "FIXTURES",
+  "batch_id": "batch-fixtures-20261118061735-fdd9c6",
+  "source_url": "https://www.indiansuperleague.com/schedule-fixtures",
+  "checksum_sha256": "405dd5c2c3ffd99403dbd2c9b161df5beae42e8e450307edb9a8797ef27fec9c",
+  "payload_path": "D:\\MARINA INTELLIGENCE\\backend\\src\\data\\raw_archive\\isl_official\\fixtures\\20261118\\batch-fixtures-20261118061735-fdd9c6_405dd5c2.json",
+  "size_bytes": 1260,
+  "archived_at": "2026-11-18T06:17:38.642068+00:00"
+}

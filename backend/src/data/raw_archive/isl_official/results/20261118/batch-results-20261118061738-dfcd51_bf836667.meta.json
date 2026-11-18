@@ -1,0 +1,10 @@
+{
+  "source_code": "ISL_OFFICIAL",
+  "entity_type": "RESULTS",
+  "batch_id": "batch-results-20261118061738-dfcd51",
+  "source_url": "https://www.indiansuperleague.com/results",
+  "checksum_sha256": "bf836667f672a5cd904c6c4296435beb96b8e31c4bf4e96ee7b9bbca69245193",
+  "payload_path": "D:\\MARINA INTELLIGENCE\\backend\\src\\data\\raw_archive\\isl_official\\results\\20261118\\batch-results-20261118061738-dfcd51_bf836667.json",
+  "size_bytes": 3241,
+  "archived_at": "2026-11-18T06:17:44.328543+00:00"
+}

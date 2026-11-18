@@ -1,0 +1,43 @@
+{
+  "source_code": "ISL_OFFICIAL",
+  "source_url": "https://www.indiansuperleague.com/schedule-fixtures",
+  "extracted_at": "2026-11-18T06:17:38.642068+00:00",
+  "competition": "Indian Super League",
+  "competition_code": "ISL",
+  "season": "2026–27",
+  "fixtures": [
+    {
+      "match_number": 8,
+      "scheduled_kickoff": "2026-11-28T19:30:00+05:30",
+      "home_team": "Chennaiyin FC",
+      "away_team": "Kerala Blasters FC",
+      "venue": "Jawaharlal Nehru Stadium (Marina Arena)",
+      "city": "Chennai",
+      "match_status": "SCHEDULED",
+      "home_score": null,
+      "away_score": null
+    },
+    {
+      "match_number": 9,
+      "scheduled_kickoff": "2026-12-05T19:30:00+05:30",
+      "home_team": "Mumbai City FC",
+      "away_team": "Chennaiyin FC",
+      "venue": "Mumbai Football Arena",
+      "city": "Mumbai",
+      "match_status": "SCHEDULED",
+      "home_score": null,
+      "away_score": null
+    },
+    {
+      "match_number": 10,
+      "scheduled_kickoff": "2026-12-13T19:30:00+05:30",
+      "home_team": "Chennaiyin FC",
+      "away_team": "FC Goa",
+      "venue": "Jawaharlal Nehru Stadium (Marina Arena)",
+      "city": "Chennai",
+      "match_status": "SCHEDULED",
+      "home_score": null,
+      "away_score": null
+    }
+  ]
+}

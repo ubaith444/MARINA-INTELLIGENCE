@@ -65,6 +65,8 @@ class ImportHistory(Base, TimestampMixin):
     records_failed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     error_payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     checksum_hash: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    source_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    payload_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
 
     # Relationships
     data_source: Mapped["DataSource"] = relationship("DataSource", back_populates="import_batches")

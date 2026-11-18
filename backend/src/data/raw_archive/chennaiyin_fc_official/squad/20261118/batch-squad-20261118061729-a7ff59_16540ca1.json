@@ -1,0 +1,120 @@
+{
+  "source_code": "CHENNAIYIN_FC_OFFICIAL",
+  "source_url": "https://chennaiyinfc.com/squad",
+  "extracted_at": "2026-11-18T06:17:35.316658+00:00",
+  "club_name": "Chennaiyin FC",
+  "club_slug": "chennaiyin-fc",
+  "season": "2026–27",
+  "players": [
+    {
+      "first_name": "Samik",
+      "last_name": "Mitra",
+      "known_name": "Samik Mitra",
+      "jersey_number": 1,
+      "position": "GOALKEEPER",
+      "nationality": "India",
+      "date_of_birth": "2000-12-01",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Mohammad",
+      "last_name": "Nawaz",
+      "known_name": "Mohammad Nawaz",
+      "jersey_number": 13,
+      "position": "GOALKEEPER",
+      "nationality": "India",
+      "date_of_birth": "2000-09-20",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Ryan",
+      "last_name": "Edwards",
+      "known_name": "Ryan Edwards",
+      "jersey_number": 6,
+      "position": "CENTRE_BACK",
+      "nationality": "England",
+      "date_of_birth": "1993-10-07",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Bikash",
+      "last_name": "Yumnam",
+      "known_name": "Bikash Yumnam",
+      "jersey_number": 3,
+      "position": "CENTRE_BACK",
+      "nationality": "India",
+      "date_of_birth": "2003-09-06",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Laldinliana",
+      "last_name": "Renthlei",
+      "known_name": "Dinliana Renthlei",
+      "jersey_number": 26,
+      "position": "RIGHT_BACK",
+      "nationality": "India",
+      "date_of_birth": "1998-08-26",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Ankit",
+      "last_name": "Mukherjee",
+      "known_name": "Ankit Mukherjee",
+      "jersey_number": 2,
+      "position": "RIGHT_BACK",
+      "nationality": "India",
+      "date_of_birth": "1996-07-10",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Farukh",
+      "last_name": "Choudhary",
+      "known_name": "Farukh Choudhary",
+      "jersey_number": 11,
+      "position": "LEFT_WINGER",
+      "nationality": "India",
+      "date_of_birth": "1996-11-08",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Lukas",
+      "last_name": "Brambilla",
+      "known_name": "Lukas Brambilla",
+      "jersey_number": 10,
+      "position": "ATTACKING_MIDFIELDER",
+      "nationality": "Brazil",
+      "date_of_birth": "1995-01-04",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Jiteshwor",
+      "last_name": "Singh",
+      "known_name": "Jiteshwor Singh",
+      "jersey_number": 8,
+      "position": "DEFENSIVE_MIDFIELDER",
+      "nationality": "India",
+      "date_of_birth": "2001-12-10",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Wilmar",
+      "last_name": "Jordan Gil",
+      "known_name": "Wilmar Jordan Gil",
+      "jersey_number": 9,
+      "position": "CENTRE_FORWARD",
+      "nationality": "Colombia",
+      "date_of_birth": "1990-10-17",
+      "squad_status": "FIRST_TEAM"
+    },
+    {
+      "first_name": "Irfan",
+      "last_name": "Yadwad",
+      "known_name": "Irfan Yadwad",
+      "jersey_number": 19,
+      "position": "CENTRE_FORWARD",
+      "nationality": "India",
+      "date_of_birth": "2001-05-19",
+      "squad_status": "FIRST_TEAM"
+    }
+  ]
+}
