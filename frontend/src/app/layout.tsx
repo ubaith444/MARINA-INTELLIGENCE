@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 export const metadata: Metadata = {
   title: "MARINA INTELLIGENCE | Chennaiyin FC & ISL 2026–27",
@@ -15,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );

@@ -367,4 +367,89 @@ Step 3 delivers a high-performance, modular analytics engine for Chennaiyin FC a
 
 ---
 
-*Ready for Step 4: Next.js Frontend Dashboard, Pitch Visualizations & Interactive Match Center.*
+## 10. Step 4: Next.js Frontend Dashboard, Pitch Visualizations & Match Centre
+
+Step 4 delivers a professional, club-grade football analytics user interface engineered specifically for **Chennaiyin FC** and the **Indian Super League 2026–27** campaign.
+
+### Frontend Tech Stack
+- **Framework:** Next.js 15 (App Router) with React 19 and TypeScript (Strict)
+- **Styling:** Tailwind CSS with Marina Blue (`#003399`), deep charcoal (`#090d16`), and pitch green (`#059669`)
+- **Pitch Visualizations:** Custom SVG Football Pitch Engine supporting 5 tactical modes and coordinate normalization
+- **Charts:** Apache ECharts (`echarts` 6.1+) with dark-theme SVG renderer and zero SSR hydration issues
+- **State & Caching:** TanStack Query (`@tanstack/react-query` v5)
+- **Icons:** Lucide React
+- **Package Manager:** `pnpm` (12.21+)
+- **Testing:** Vitest + React Testing Library (10/10 tests passing) + Playwright e2e suite
+
+---
+
+### The 8 Implemented Application Pages
+
+| Route | Page | Key Capabilities |
+| :--- | :--- | :--- |
+| `/` | **Season Dashboard** | KPI cards (Points, PPM, GD, Clean Sheets), Form sequence (`W-D-W`), Goal trend charts, Home vs Away venue splits |
+| `/matches` | **Match Centre** | Complete fixture calendar, results, matchweek filtering, home/away badges, search by opponent |
+| `/matches/[id]` | **Match Details** | Scoreboard, side-by-side stats comparison, half-by-half breakdown, chronological event timeline, starting lineups |
+| `/tactical` | **Tactical Analysis** | Reusable SVG pitch, Field Tilt territorial dominance, progressive pass benchmarks, passing networks |
+| `/players` | **Player Directory** | Searchable squad roster, position filters (GK/DEF/MID/FWD), domestic vs overseas filters, sorting |
+| `/players/[id]` | **Player Profiles** | Player bio, performance KPIs, standardized per-90 metrics (sample size validated), 5D tactical radar |
+| `/teams` | **Team Analysis** | Attack volume, shot efficiency, defensive resilience, duel success, goal timing distributions, disciplinary risk |
+| `/settings` | **Settings & Diagnostics** | REST backend configuration (`NEXT_PUBLIC_API_BASE_URL`), live connectivity diagnostics, data provenance |
+
+---
+
+### Interactive SVG Football Pitch Component
+
+The pitch component (`src/components/pitch/FootballPitch.tsx`) provides:
+- Standard FIFA / ISL pitch geometry (105m × 68m) with touchlines, penalty boxes, 6-yard boxes, penalty arcs, and goals.
+- Full-Pitch and Attacking-Half view toggles with coordinate normalization.
+- 5 Tactical Visualization Modes:
+  1. `FORMATION`: Starting XI markers, shirt numbers, player name badges, preset selector (4-2-3-1, 4-3-3, 3-5-2, 4-4-2), clickable player cards.
+  2. `PASSING NETWORK`: Average on-ball positions with touch volumes and weighted pass combination lines.
+  3. `SHOT MAP`: Shot markers with coordinates, goal distance (m), shooting angle (°), outcome, and Expected Goals ($xG$) bubble scaling.
+  4. `DEFENSIVE ACTIONS`: Spatial markers for tackles won/lost, interceptions, clearances, and blocks.
+  5. `HEATMAP`: Positional density intensity zones overlaid across pitch zones.
+
+---
+
+### Frontend Commands
+
+```powershell
+cd "D:\MARINA INTELLIGENCE\frontend"
+
+# Run development server (http://localhost:3000)
+pnpm dev
+
+# Run unit and component test suite (Vitest)
+pnpm test
+
+# Build production bundle
+pnpm build
+
+# Run Playwright End-to-End tests
+pnpm test:e2e
+```
+
+---
+
+## 11. Step 4 Acceptance Checklist Verification
+
+| Checklist Item | Status | Evidence / Verification Test |
+| :--- | :---: | :--- |
+| **Next.js 15 & React 19 Frontend Initialized** | **PASSED** | Monorepo `frontend/` directory configured with App Router and Tailwind CSS |
+| **FastAPI REST Backend Integration** | **PASSED** | Configured via `NEXT_PUBLIC_API_BASE_URL`, typed client in `src/lib/api.ts` |
+| **Season Dashboard Implemented** | **PASSED** | Implemented in `src/app/page.tsx` with verified metrics and ECharts trends |
+| **Interactive Match Centre Implemented** | **PASSED** | Implemented in `src/app/matches/page.tsx` with status and opponent filtering |
+| **Match Details Page Implemented** | **PASSED** | Implemented in `src/app/matches/[id]/page.tsx` with half breakdown and timeline |
+| **Tactical Pitch Visualizations Implemented** | **PASSED** | Full SVG pitch engine in `src/components/pitch/FootballPitch.tsx` with 5 modes |
+| **Player Directory & Profiles Implemented** | **PASSED** | `src/app/players/page.tsx` and `src/app/players/[id]/page.tsx` with 5D radar |
+| **Team Analysis Page Implemented** | **PASSED** | `src/app/teams/page.tsx` with attack conversion, defense, and discipline |
+| **Settings & Diagnostics Page Implemented** | **PASSED** | `src/app/settings/page.tsx` with live latency test and provenance catalog |
+| **Missing-Data & Anti-Fabrication Preserved** | **PASSED** | Nulls preserved, no fake scores or fabricated metrics, clean empty states |
+| **Automated Frontend Test Suite Passing** | **PASSED** | **10/10 Vitest component & API tests passing** in `src/test/` |
+| **Production Build Cleanly Compiles** | **PASSED** | `pnpm build` creates 8 optimized production routes with 0 errors |
+| **Full Backend Test Suite Passing** | **PASSED** | **59/59 pytest tests passing** across all backend modules |
+
+---
+
+*MARINA INTELLIGENCE is fully functional across Backend (FastAPI), Database (PostgreSQL/SQLAlchemy), Analytics Engine (6 Modules), and Frontend (Next.js 15 + React 19 + SVG Pitch).*

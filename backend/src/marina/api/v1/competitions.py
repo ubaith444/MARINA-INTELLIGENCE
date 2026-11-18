@@ -43,6 +43,27 @@ async def create_competition(
     return CompetitionRead.model_validate(comp)
 
 
+seasons_router = APIRouter(prefix="/seasons", tags=["Seasons"])
+
+
+@seasons_router.get("", response_model=List[SeasonRead], summary="List All Seasons")
+@router.get("/seasons", response_model=List[SeasonRead], summary="List Competition Seasons")
+async def list_seasons(
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+) -> List[SeasonRead]:
+    service = CompetitionService(db)
+    items = await service.list_seasons(offset=offset, limit=limit)
+    return [SeasonRead.model_validate(s) for s in items]
+
+
+@seasons_router.post(
+    "",
+    response_model=SeasonRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Season Edition",
+)
 @router.post(
     "/seasons",
     response_model=SeasonRead,
@@ -58,6 +79,11 @@ async def create_season(
     return SeasonRead.model_validate(season)
 
 
+@seasons_router.get(
+    "/{slug}",
+    response_model=SeasonRead,
+    summary="Get Season By Slug",
+)
 @router.get(
     "/seasons/{slug}",
     response_model=SeasonRead,

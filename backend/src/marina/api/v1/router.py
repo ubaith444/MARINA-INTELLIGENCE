@@ -17,6 +17,7 @@ api_v1_router = APIRouter()
 
 api_v1_router.include_router(health.router)
 api_v1_router.include_router(competitions.router)
+api_v1_router.include_router(competitions.seasons_router)
 api_v1_router.include_router(teams.router)
 api_v1_router.include_router(players.router)
 api_v1_router.include_router(matches.router)

@@ -12,6 +12,9 @@ from marina.analytics.player_intelligence import PlayerIntelligenceEngine
 from marina.analytics.tactical import TacticalAnalyticsEngine
 from marina.analytics.team_performance import TeamPerformanceEngine
 from marina.db.session import get_db
+from marina.models.competition import Season
+from marina.models.team import Team
+from sqlalchemy import select
 from marina.schemas.analytics import (
     AttackingAnalyticsResponse,
     DefensiveAnalyticsResponse,
@@ -25,6 +28,108 @@ from marina.schemas.analytics import (
 )
 
 router = APIRouter(prefix="/analytics", tags=["Football Analytics & Performance Intelligence"])
+
+
+@router.get(
+    "/season",
+    response_model=TeamSeasonPerformanceResponse,
+    summary="Season Performance Overview",
+    description="Calculates season performance for Chennaiyin FC (or requested club) in the current season.",
+)
+async def get_season_overview(
+    team_id: Optional[uuid.UUID] = Query(default=None),
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    form_window: int = Query(default=5, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> TeamSeasonPerformanceResponse:
+    if not team_id:
+        t_stmt = select(Team).where(Team.slug == "chennaiyin-fc")
+        cfc = (await db.execute(t_stmt)).scalars().first()
+        if not cfc:
+            t_stmt = select(Team).limit(1)
+            cfc = (await db.execute(t_stmt)).scalars().first()
+        if not cfc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No team available.")
+        team_id = cfc.id
+
+    if not season_id:
+        s_stmt = select(Season).where(Season.is_current.is_(True))
+        cur_s = (await db.execute(s_stmt)).scalars().first()
+        if not cur_s:
+            s_stmt = select(Season).limit(1)
+            cur_s = (await db.execute(s_stmt)).scalars().first()
+        if not cur_s:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No season available.")
+        season_id = cur_s.id
+
+    engine = TeamPerformanceEngine(db)
+    try:
+        data = await engine.calculate_team_season_performance(
+            team_id=team_id,
+            season_id=season_id,
+            form_window=form_window,
+        )
+        return TeamSeasonPerformanceResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.get(
+    "/team/{team_id}",
+    response_model=TeamSeasonPerformanceResponse,
+    summary="Team Season Performance",
+    description="Calculates season performance for specified team in current or specified season.",
+)
+async def get_team_overview(
+    team_id: uuid.UUID,
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    form_window: int = Query(default=5, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+) -> TeamSeasonPerformanceResponse:
+    if not season_id:
+        s_stmt = select(Season).where(Season.is_current.is_(True))
+        cur_s = (await db.execute(s_stmt)).scalars().first()
+        if not cur_s:
+            s_stmt = select(Season).limit(1)
+            cur_s = (await db.execute(s_stmt)).scalars().first()
+        if not cur_s:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No season available.")
+        season_id = cur_s.id
+
+    engine = TeamPerformanceEngine(db)
+    try:
+        data = await engine.calculate_team_season_performance(
+            team_id=team_id,
+            season_id=season_id,
+            form_window=form_window,
+        )
+        return TeamSeasonPerformanceResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.get(
+    "/player/{player_id}",
+    response_model=PlayerPerformanceResponse,
+    summary="Player Performance Overview",
+    description="Calculates player seasonal performance for specified player.",
+)
+async def get_player_overview(
+    player_id: uuid.UUID,
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    min_minutes: int = Query(default=45, ge=0),
+    db: AsyncSession = Depends(get_db),
+) -> PlayerPerformanceResponse:
+    engine = PlayerIntelligenceEngine(db)
+    try:
+        data = await engine.calculate_player_performance(
+            player_id=player_id,
+            season_id=season_id,
+            min_minutes_for_per90=min_minutes,
+        )
+        return PlayerPerformanceResponse.model_validate(data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.get(

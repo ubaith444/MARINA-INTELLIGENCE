@@ -32,6 +32,12 @@ class CompetitionService:
     async def list_competitions(self, offset: int = 0, limit: int = 50) -> Sequence[Competition]:
         return await self.comp_repo.list(offset=offset, limit=limit)
 
+    async def list_seasons(self, offset: int = 0, limit: int = 50) -> Sequence[Season]:
+        return await self.season_repo.list(offset=offset, limit=limit)
+
+    async def get_current_season(self, competition_code: str = "ISL") -> Optional[Season]:
+        return await self.season_repo.get_current_season(competition_code)
+
     async def get_season_by_slug(self, slug: str) -> Season:
         season = await self.season_repo.get_by_slug(slug)
         if not season:
