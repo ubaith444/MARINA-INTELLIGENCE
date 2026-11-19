@@ -33,11 +33,11 @@ MARINA INTELLIGENCE delivers 8 fully integrated, end-to-end operational modules:
 
 A complete end-to-end video walkthrough demonstrating MARINA INTELLIGENCE's match centre logs, tactical pitch models, player performance dossiers, and AI analyst workflows:
 
-[![MARINA INTELLIGENCE Demonstration Video](https://img.shields.io/badge/YouTube-Video%20Demonstration-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=REPLACE_WITH_YOUR_YOUTUBE_VIDEO_ID)
+[![MARINA INTELLIGENCE Demonstration Video](https://img.shields.io/badge/YouTube-Video%20Demonstration-red?style=for-the-badge&logo=youtube)](https://youtu.be/NEil_gDGzdo)
 
 > **Demonstration Video Link:**  
 > `https://www.youtube.com/watch?v=REPLACE_WITH_YOUR_YOUTUBE_VIDEO_ID`  
-> *(Replace the placeholder above with your official demonstration recording URL)*
+> *(https://youtu.be/NEil_gDGzdo)*
 
 ---
 
