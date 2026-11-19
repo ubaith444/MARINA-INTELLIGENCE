@@ -98,7 +98,7 @@ class MatchIntelligenceEngine:
             "match_id": str(match.id),
             "match_number": match.match_number,
             "match_status": match.match_status.value if hasattr(match.match_status, "value") else str(match.match_status),
-            "kickoff": match.scheduled_kickoff.isoformat(),
+            "kickoff": match.scheduled_kickoff.isoformat() if match.scheduled_kickoff else None,
             "venue": match.venue.name if match.venue else "Unknown Venue",
             "attendance": match.attendance,
             "referee": match.referee,

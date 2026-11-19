@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from pydantic import Field
 
 from marina.schemas.common import BaseSchema
@@ -52,3 +52,31 @@ class TeamRead(TeamBase):
     created_at: datetime
     updated_at: datetime
     primary_venue: Optional[VenueRead] = None
+
+
+class LeadershipMemberRead(BaseSchema):
+    id: uuid.UUID
+    player_id: uuid.UUID
+    player_name: str
+    jersey_number: Optional[int] = None
+    position: str
+    primary_position: str
+    nationality: str
+    is_indian: bool = False
+    leadership_role: str = "Leadership Group"
+    is_captain: bool = False
+    is_vice_captain: bool = False
+    image_url: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class LeadershipGroupResponse(BaseSchema):
+    team_id: uuid.UUID
+    team_name: str
+    team_short_name: str
+    season_id: uuid.UUID
+    season_name: str
+    role_title: str = "Leadership Group"
+    total_members: int
+    members: List[LeadershipMemberRead]
+

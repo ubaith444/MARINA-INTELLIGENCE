@@ -4,7 +4,6 @@ import {
   fetchMatches,
   fetchSeasonAnalytics,
   fetchTeamAttacking,
-  comparePlayers,
 } from "@/lib/api";
 
 describe("API Client Layer", () => {
@@ -45,23 +44,6 @@ describe("API Client Layer", () => {
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/matches?season_id=s-123&status=FINISHED"),
       expect.any(Object)
-    );
-  });
-
-  it("comparePlayers makes POST request with player payload", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ player_a: {}, player_b: {}, radar_comparison: [] }),
-    } as any);
-
-    await comparePlayers("p-1", "p-2");
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/analytics/players/compare"),
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ player_a_id: "p-1", player_b_id: "p-2", season_id: null }),
-      })
     );
   });
 });

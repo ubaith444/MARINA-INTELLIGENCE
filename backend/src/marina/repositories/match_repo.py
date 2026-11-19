@@ -1,13 +1,15 @@
 """Match, Lineup, and Match Event Repositories."""
 
 import uuid
+from datetime import date, datetime, time
 from typing import Optional, Sequence
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import aliased, selectinload
 
 from marina.models.common import MatchStatus
 from marina.models.match import Lineup, Match, MatchEvent
+from marina.models.team import Team, Venue
 from marina.repositories.base import BaseRepository
 
 
@@ -24,7 +26,8 @@ class MatchRepository(BaseRepository[Match]):
                 selectinload(Match.away_team),
                 selectinload(Match.venue),
                 selectinload(Match.lineups).selectinload(Lineup.player),
-                selectinload(Match.events),
+                selectinload(Match.events).selectinload(MatchEvent.primary_player),
+                selectinload(Match.events).selectinload(MatchEvent.secondary_player),
             )
         )
         res = await self.session.execute(stmt)
@@ -35,6 +38,11 @@ class MatchRepository(BaseRepository[Match]):
         season_id: Optional[uuid.UUID] = None,
         team_id: Optional[uuid.UUID] = None,
         status: Optional[MatchStatus] = None,
+        is_home: Optional[bool] = None,
+        matchweek: Optional[int] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        search: Optional[str] = None,
         offset: int = 0,
         limit: int = 50,
     ) -> Sequence[Match]:
@@ -48,10 +56,58 @@ class MatchRepository(BaseRepository[Match]):
         )
         if season_id:
             stmt = stmt.where(Match.season_id == season_id)
+
+        # Home / Away / Team filtering
         if team_id:
-            stmt = stmt.where(or_(Match.home_team_id == team_id, Match.away_team_id == team_id))
+            if is_home is True:
+                stmt = stmt.where(Match.home_team_id == team_id)
+            elif is_home is False:
+                stmt = stmt.where(Match.away_team_id == team_id)
+            else:
+                stmt = stmt.where(or_(Match.home_team_id == team_id, Match.away_team_id == team_id))
+        elif is_home is not None:
+            # Default to club (Chennaiyin FC) if team_id not specified
+            stmt_cfc = select(Team.id).where(Team.slug == "chennaiyin-fc").limit(1)
+            cfc_res = await self.session.execute(stmt_cfc)
+            cfc_id = cfc_res.scalar()
+            if cfc_id:
+                if is_home is True:
+                    stmt = stmt.where(Match.home_team_id == cfc_id)
+                elif is_home is False:
+                    stmt = stmt.where(Match.away_team_id == cfc_id)
+
         if status:
             stmt = stmt.where(Match.match_status == status)
+
+        if matchweek is not None:
+            stmt = stmt.where(Match.match_number == matchweek)
+
+        if start_date is not None:
+            stmt = stmt.where(Match.scheduled_kickoff >= datetime.combine(start_date, time.min))
+
+        if end_date is not None:
+            stmt = stmt.where(Match.scheduled_kickoff <= datetime.combine(end_date, time.max))
+
+        if search and search.strip():
+            term = f"%{search.strip().lower()}%"
+            home_team_alias = aliased(Team)
+            away_team_alias = aliased(Team)
+            venue_alias = aliased(Venue)
+            stmt = (
+                stmt.outerjoin(home_team_alias, Match.home_team_id == home_team_alias.id)
+                .outerjoin(away_team_alias, Match.away_team_id == away_team_alias.id)
+                .outerjoin(venue_alias, Match.venue_id == venue_alias.id)
+                .where(
+                    or_(
+                        func.lower(home_team_alias.name).like(term),
+                        func.lower(home_team_alias.short_name).like(term),
+                        func.lower(away_team_alias.name).like(term),
+                        func.lower(away_team_alias.short_name).like(term),
+                        func.lower(venue_alias.name).like(term),
+                        func.lower(venue_alias.city).like(term),
+                    )
+                )
+            )
 
         stmt = stmt.order_by(Match.scheduled_kickoff.asc()).offset(offset).limit(limit)
         res = await self.session.execute(stmt)

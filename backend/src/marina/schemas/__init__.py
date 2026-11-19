@@ -20,7 +20,9 @@ from marina.schemas.match import (
     MatchCreate,
     MatchDetailRead,
     MatchEventRead,
+    MatchLineupRead,
     MatchRead,
+    MatchSubstituteRead,
 )
 from marina.schemas.player import (
     PlayerBase,
@@ -83,6 +85,8 @@ __all__ = [
     "MatchRead",
     "MatchDetailRead",
     "LineupRead",
+    "MatchLineupRead",
+    "MatchSubstituteRead",
     "MatchEventRead",
     "TeamMatchStatisticBase",
     "TeamMatchStatisticCreate",

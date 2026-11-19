@@ -9,18 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        marina: {
-          50: "#eef5ff",
-          100: "#d9e8ff",
-          200: "#bcd7ff",
-          300: "#8ebdff",
-          400: "#5999ff",
-          500: "#3273fc",
-          600: "#1a53f0",
-          700: "#143edc",
-          800: "#003399", // Chennaiyin FC Marina Blue
-          900: "#122d86",
-          950: "#0a194e",
+        // MARINA INTELLIGENCE — Light Football Performance Palette
+        pitch: {
+          white: "#FFFFFF",
+          mist: "#F4F8F4",
+          soft: "#E6F0E7",
+          green: "#246B45",
+          dark: "#174B32",
+          charcoal: "#26332B",
+          muted: "#718078",
+          border: "#E2EAE3",
+          warning: "#D9A441",
+          negative: "#C65B56",
+        },
+        cfc: {
+          blue: "#003399", // Chennaiyin FC Official Primary
+          gold: "#FFB81C", // Official Gold Accent
+          sky: "#E8F0FE",
         },
       },
     },

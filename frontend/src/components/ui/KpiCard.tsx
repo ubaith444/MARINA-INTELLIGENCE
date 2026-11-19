@@ -18,15 +18,15 @@ export default function KpiCard({
   subtext,
   trend,
   trendValue,
-  accent = "blue",
+  accent = "green",
   icon: Icon,
   className,
 }: KpiCardProps) {
-  const accentClasses = {
-    blue: "border-blue-900/30 hover:border-blue-700/50 bg-slate-900/90 text-blue-400",
-    green: "border-emerald-900/30 hover:border-emerald-700/50 bg-slate-900/90 text-emerald-400",
-    amber: "border-amber-900/30 hover:border-amber-700/50 bg-slate-900/90 text-amber-400",
-    slate: "border-slate-800 hover:border-slate-700 bg-slate-900/80 text-slate-400",
+  const accentBorder = {
+    green: "border-l-4 border-l-[#246B45]",
+    blue: "border-l-4 border-l-[#003399]",
+    amber: "border-l-4 border-l-[#D9A441]",
+    slate: "border-l-4 border-l-[#CBDAD0]",
   }[accent];
 
   const displayValue = value === null || value === undefined ? "—" : value;
@@ -34,31 +34,31 @@ export default function KpiCard({
   return (
     <div
       className={clsx(
-        "relative p-4 rounded-xl border transition-all duration-150 flex flex-col justify-between shadow-sm",
-        accentClasses,
+        "bg-[#FFFFFF] border border-[#E2EAE3] p-4 rounded-xl shadow-[0_1px_3px_rgba(38,51,43,0.04)] flex flex-col justify-between transition-all hover:border-[#CBDAD0]",
+        accentBorder,
         className
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+        <span className="text-[11px] font-bold text-[#718078] uppercase tracking-wider font-mono">
           {label}
         </span>
-        {Icon && <Icon className="w-4 h-4 text-slate-400" />}
+        {Icon && <Icon className="w-4 h-4 text-[#718078]" />}
       </div>
 
-      <div className="mt-2 flex items-baseline justify-between">
-        <span className="text-2xl font-bold font-mono text-slate-100 tracking-tight">
+      <div className="mt-2.5 flex items-baseline justify-between">
+        <span className="text-2xl font-black font-mono text-[#26332B] tracking-tight">
           {displayValue}
         </span>
         {trendValue && (
           <span
             className={clsx(
-              "text-xs font-mono font-medium flex items-center space-x-0.5",
+              "text-xs font-mono font-bold flex items-center space-x-0.5",
               trend === "up"
-                ? "text-emerald-400"
+                ? "text-[#246B45]"
                 : trend === "down"
-                ? "text-rose-400"
-                : "text-slate-400"
+                ? "text-[#C65B56]"
+                : "text-[#718078]"
             )}
           >
             <span>{trend === "up" ? "▲" : trend === "down" ? "▼" : "•"}</span>
@@ -68,7 +68,7 @@ export default function KpiCard({
       </div>
 
       {subtext && (
-        <p className="mt-1 text-[11px] text-slate-400 font-medium truncate">{subtext}</p>
+        <p className="mt-1 text-[11px] text-[#718078] font-medium truncate">{subtext}</p>
       )}
     </div>
   );

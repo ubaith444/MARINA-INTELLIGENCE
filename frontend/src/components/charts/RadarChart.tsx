@@ -20,7 +20,7 @@ export default function RadarChart({
 }: RadarChartProps) {
   if (!dimensions || dimensions.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center text-xs text-slate-500 font-mono">
+      <div className="h-64 flex items-center justify-center text-xs text-[#718078] font-mono">
         No radar dimensions available
       </div>
     );
@@ -42,13 +42,13 @@ export default function RadarChart({
       symbolSize: 6,
       lineStyle: {
         width: 2.5,
-        color: "#3b82f6", // Marina Blue accent
+        color: "#246B45", // Football Green
       },
       areaStyle: {
-        color: "rgba(59, 130, 246, 0.25)",
+        color: "rgba(36, 107, 69, 0.20)",
       },
       itemStyle: {
-        color: "#60a5fa",
+        color: "#246B45",
       },
     },
   ];
@@ -61,14 +61,14 @@ export default function RadarChart({
       symbolSize: 6,
       lineStyle: {
         width: 2,
-        color: "#10b981", // Emerald Green
+        color: "#D9A441", // Match Amber
         type: "dashed",
       },
       areaStyle: {
-        color: "rgba(16, 185, 129, 0.2)",
+        color: "rgba(217, 164, 65, 0.20)",
       },
       itemStyle: {
-        color: "#34d399",
+        color: "#D9A441",
       },
     });
   }
@@ -76,14 +76,15 @@ export default function RadarChart({
   const option: echarts.EChartsOption = {
     tooltip: {
       trigger: "item",
-      backgroundColor: "#0f172a",
-      borderColor: "#334155",
-      textStyle: { color: "#f8fafc", fontSize: 12 },
+      backgroundColor: "#FFFFFF",
+      borderColor: "#E2EAE3",
+      textStyle: { color: "#26332B", fontSize: 12 },
+      extraCssText: "box-shadow: 0 2px 8px rgba(38, 51, 43, 0.08); border-radius: 8px;",
     },
     legend: {
       show: true,
       bottom: 0,
-      textStyle: { color: "#94a3b8", fontSize: 11 },
+      textStyle: { color: "#718078", fontSize: 11, fontWeight: "bold" },
       icon: "circle",
     },
     radar: {
@@ -91,24 +92,24 @@ export default function RadarChart({
       shape: "polygon",
       splitNumber: 4,
       axisName: {
-        color: "#94a3b8",
+        color: "#26332B",
         fontSize: 10,
         fontWeight: "bold",
       },
       splitLine: {
         lineStyle: {
-          color: "rgba(51, 65, 85, 0.6)",
+          color: "#E2EAE3",
         },
       },
       splitArea: {
         show: true,
         areaStyle: {
-          color: ["rgba(15, 23, 42, 0.4)", "rgba(30, 41, 59, 0.4)"],
+          color: ["#FFFFFF", "#F4F8F4"],
         },
       },
       axisLine: {
         lineStyle: {
-          color: "rgba(51, 65, 85, 0.8)",
+          color: "#E2EAE3",
         },
       },
     },

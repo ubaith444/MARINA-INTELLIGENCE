@@ -181,22 +181,11 @@ async def test_api_player_performance(client: AsyncClient, setup_api_data):
 
 
 @pytest.mark.asyncio
-async def test_api_player_compare(client: AsyncClient, setup_api_data):
-    """POST /api/v1/analytics/players/compare"""
-    data = setup_api_data
+async def test_api_player_compare_removed(client: AsyncClient, setup_api_data):
+    """POST /api/v1/analytics/players/compare should return 404 or 405 after feature removal."""
     url = "/api/v1/analytics/players/compare"
-    payload = {
-        "player_a_id": str(data["p1"].id),
-        "player_b_id": str(data["p2"].id),
-        "season_id": str(data["season"].id),
-    }
-    resp = await client.post(url, json=payload)
-    assert resp.status_code == 200
-    res = resp.json()
-    assert "player_a" in res
-    assert "player_b" in res
-    assert "radar_comparison" in res
-    assert len(res["radar_comparison"]) == 5
+    resp = await client.post(url, json={})
+    assert resp.status_code in (404, 405)
 
 
 @pytest.mark.asyncio

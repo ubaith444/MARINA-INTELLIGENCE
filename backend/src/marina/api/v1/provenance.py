@@ -9,8 +9,14 @@ from marina.schemas.provenance import DataSourceCreate, DataSourceRead
 from marina.services.provenance_service import ProvenanceService
 
 router = APIRouter(prefix="/provenance", tags=["Data Provenance"])
+data_sources_router = APIRouter(tags=["Data Sources"])
 
 
+@data_sources_router.get(
+    "/data-sources",
+    response_model=List[DataSourceRead],
+    summary="List Authoritative Data Sources",
+)
 @router.get("/sources", response_model=List[DataSourceRead], summary="List Authoritative Data Sources")
 async def list_data_sources(
     offset: int = Query(default=0, ge=0),

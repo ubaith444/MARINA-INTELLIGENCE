@@ -1,15 +1,44 @@
 """Teams and Venues REST Endpoints."""
 
-from typing import List
+import uuid
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from marina.core.exceptions import EntityNotFoundError
 from marina.db.session import get_db
-from marina.schemas.team import TeamCreate, TeamRead, VenueCreate, VenueRead
+from marina.schemas.team import (
+    LeadershipGroupResponse,
+    TeamCreate,
+    TeamRead,
+    VenueCreate,
+    VenueRead,
+)
+from marina.services.leadership_service import LeadershipService
 from marina.services.team_service import TeamService
 
 router = APIRouter(prefix="/teams", tags=["Teams & Venues"])
+
+
+@router.get("/leadership-group", response_model=LeadershipGroupResponse, summary="Get Season Leadership Group")
+async def get_season_leadership_group(
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> LeadershipGroupResponse:
+    """Returns the verified five-member leadership group for Chennaiyin FC in ISL 2026–27."""
+    service = LeadershipService(db)
+    return await service.get_leadership_group(season_id=season_id)
+
+
+@router.get("/{team_id}/leadership-group", response_model=LeadershipGroupResponse, summary="Get Team Leadership Group")
+async def get_team_leadership_group(
+    team_id: uuid.UUID,
+    season_id: Optional[uuid.UUID] = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> LeadershipGroupResponse:
+    """Returns the season-specific leadership group for a designated club."""
+    service = LeadershipService(db)
+    return await service.get_leadership_group(team_id=team_id, season_id=season_id)
 
 
 @router.get("", response_model=List[TeamRead], summary="List Football Clubs")

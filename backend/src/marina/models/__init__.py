@@ -13,11 +13,16 @@ from marina.models.common import (
     VerificationStatus,
 )
 from marina.models.competition import Competition, Season
-from marina.models.match import Lineup, Match, MatchEvent
-from marina.models.player import Player, SquadRegistration
-from marina.models.provenance import DataSource, ImportHistory
+from marina.models.match import Lineup, Match, MatchEvent, MatchLineup, MatchPass, MatchShot, MatchSubstitute
+from marina.models.player import (
+    Player,
+    SquadImportHistory,
+    SquadRegistration,
+    TeamSquadMembership,
+)
+from marina.models.provenance import DataMetricVerification, DataSource, DataSyncLog, ImportHistory
 from marina.models.statistics import PlayerMatchStatistic, TeamMatchStatistic
-from marina.models.team import Team, Venue
+from marina.models.team import SeasonLeadershipMember, Team, Venue
 
 __all__ = [
     "Base",
@@ -36,13 +41,22 @@ __all__ = [
     "Season",
     "Venue",
     "Team",
+    "SeasonLeadershipMember",
     "Player",
     "SquadRegistration",
+    "TeamSquadMembership",
+    "SquadImportHistory",
     "Match",
     "Lineup",
+    "MatchLineup",
+    "MatchSubstitute",
     "MatchEvent",
+    "MatchShot",
+    "MatchPass",
     "TeamMatchStatistic",
     "PlayerMatchStatistic",
     "DataSource",
     "ImportHistory",
+    "DataSyncLog",
+    "DataMetricVerification",
 ]

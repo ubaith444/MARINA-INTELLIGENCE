@@ -93,6 +93,7 @@ class BatchStatus(str, enum.Enum):
 class PlayerPosition(str, enum.Enum):
     """Standardized tactical football positions."""
     GK = "GOALKEEPER"
+    DEF = "DEFENDER"
     CB = "CENTRE_BACK"
     LB = "LEFT_BACK"
     RB = "RIGHT_BACK"

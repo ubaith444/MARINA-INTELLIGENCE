@@ -2,14 +2,15 @@
 
 import uuid
 from typing import TYPE_CHECKING, List, Optional
-from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Float, ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from marina.db.base import Base, GUID, TimestampMixin
 
 if TYPE_CHECKING:
+    from marina.models.competition import Season
     from marina.models.match import Lineup, Match
-    from marina.models.player import SquadRegistration
+    from marina.models.player import Player, SquadRegistration
     from marina.models.statistics import TeamMatchStatistic
 
 
@@ -68,3 +69,40 @@ class Team(Base, TimestampMixin):
     team_statistics: Mapped[List["TeamMatchStatistic"]] = relationship(
         "TeamMatchStatistic", back_populates="team"
     )
+    leadership_members: Mapped[List["SeasonLeadershipMember"]] = relationship(
+        "SeasonLeadershipMember", back_populates="team", cascade="all, delete-orphan"
+    )
+
+
+class SeasonLeadershipMember(Base, TimestampMixin):
+    """Season-specific club leadership group membership.
+    Decoupled from matchday captaincies and playing positions.
+    """
+    __tablename__ = "season_leadership_members"
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    season_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("seasons.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    player_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("players.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    leadership_role: Mapped[str] = mapped_column(String(64), default="Leadership Group", nullable=False)
+    is_captain: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_vice_captain: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    # Relationships
+    player: Mapped["Player"] = relationship("Player", lazy="selectin")
+    team: Mapped["Team"] = relationship("Team", back_populates="leadership_members", lazy="selectin")
+    season: Mapped["Season"] = relationship("Season", lazy="selectin")
+
+    __table_args__ = (
+        UniqueConstraint("season_id", "team_id", "player_id", name="uq_season_leadership_player"),
+        Index("ix_season_leadership_lookup", "season_id", "team_id"),
+    )
+

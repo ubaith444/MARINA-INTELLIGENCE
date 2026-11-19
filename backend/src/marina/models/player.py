@@ -3,9 +3,22 @@ Separates intrinsic human player identity from temporary club/season squad regis
 """
 
 import uuid
-from datetime import date
+from datetime import date, datetime
 from typing import TYPE_CHECKING, List, Optional
-from sqlalchemy import Boolean, Date, Enum, ForeignKey, Index, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Date,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from marina.db.base import Base, GUID, TimestampMixin
@@ -40,13 +53,29 @@ class Player(Base, TimestampMixin):
         nullable=True,
     )
     height_cm: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    height_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     weight_kg: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     preferred_foot: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)  # LEFT, RIGHT, BOTH
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
+    # Squad & Contract Attributes (Current active snapshot)
+    squad_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    joined_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    previous_club: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    contract_expiry: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    market_value_inr: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    market_value_original: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    source_name: Mapped[Optional[str]] = mapped_column(
+        String(128), nullable=True, default="Chennaiyin FC Official / Transfermarkt"
+    )
+    verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # Relationships
     squad_registrations: Mapped[List["SquadRegistration"]] = relationship(
         "SquadRegistration", back_populates="player", cascade="all, delete-orphan"
+    )
+    squad_memberships: Mapped[List["TeamSquadMembership"]] = relationship(
+        "TeamSquadMembership", back_populates="player", cascade="all, delete-orphan"
     )
     lineups: Mapped[List["Lineup"]] = relationship("Lineup", back_populates="player")
     statistics: Mapped[List["PlayerMatchStatistic"]] = relationship(
@@ -94,3 +123,66 @@ class SquadRegistration(Base, TimestampMixin):
         UniqueConstraint("season_id", "team_id", "player_id", name="uq_squad_registration_player_season"),
         Index("ix_squad_reg_lookup", "season_id", "team_id", "jersey_number"),
     )
+
+
+class TeamSquadMembership(Base, TimestampMixin):
+    """Season-specific squad membership for a player in a club roster.
+    Preserves historical squad associations and contract terms when rosters roll over.
+    """
+    __tablename__ = "team_squad_memberships"
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    season_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("seasons.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    player_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("players.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    squad_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    position: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    joined_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    previous_club: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    contract_expiry: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    market_value_inr: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    market_value_original: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)
+
+    # Relationships
+    player: Mapped["Player"] = relationship("Player", back_populates="squad_memberships", lazy="selectin")
+    team: Mapped["Team"] = relationship("Team", lazy="selectin")
+    season: Mapped["Season"] = relationship("Season", lazy="selectin")
+
+    __table_args__ = (
+        UniqueConstraint("season_id", "team_id", "player_id", name="uq_squad_membership_player_season"),
+        Index("ix_squad_membership_lookup", "season_id", "team_id", "squad_number"),
+    )
+
+
+class SquadImportHistory(Base, TimestampMixin):
+    """Audit log of squad import and synchronization operations."""
+    __tablename__ = "squad_import_history"
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    season_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("seasons.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    batch_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    source_name: Mapped[str] = mapped_column(String(128), default="Chennaiyin FC 2026-27 Official Roster", nullable=False)
+    total_incoming: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    new_players: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    updated_players: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    deactivated_players: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    retained_players: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="COMPLETED", nullable=False)
+    report_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    imported_by: Mapped[Optional[str]] = mapped_column(String(64), default="admin", nullable=True)
+
+    # Relationships
+    team: Mapped["Team"] = relationship("Team", lazy="selectin")
+    season: Mapped["Season"] = relationship("Season", lazy="selectin")

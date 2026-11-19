@@ -1,13 +1,13 @@
 """Application Configuration for MARINA INTELLIGENCE."""
 
-from typing import List
-from pydantic import Field, computed_field
+from typing import Any, List
+from pydantic import Field, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
@@ -18,6 +18,17 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     APP_ENV: str = "development"
     DEBUG: bool = True
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug(cls, v: Any) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            return v.strip().lower() in ("true", "1", "yes", "dev", "development")
+        if isinstance(v, (int, float)):
+            return bool(v)
+        return True
 
     # Host & Port
     HOST: str = "0.0.0.0"

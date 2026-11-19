@@ -1,6 +1,7 @@
 """Match Service Enforcing Match Lifecycle and Result Integrity."""
 
 import uuid
+from datetime import date
 from typing import Optional, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,6 +50,11 @@ class MatchService:
         season_id: Optional[uuid.UUID] = None,
         team_id: Optional[uuid.UUID] = None,
         status: Optional[MatchStatus] = None,
+        is_home: Optional[bool] = None,
+        matchweek: Optional[int] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        search: Optional[str] = None,
         offset: int = 0,
         limit: int = 50,
     ) -> Sequence[Match]:
@@ -56,6 +62,11 @@ class MatchService:
             season_id=season_id,
             team_id=team_id,
             status=status,
+            is_home=is_home,
+            matchweek=matchweek,
+            start_date=start_date,
+            end_date=end_date,
+            search=search,
             offset=offset,
             limit=limit,
         )

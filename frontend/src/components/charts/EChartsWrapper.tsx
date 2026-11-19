@@ -6,15 +6,19 @@ import * as echarts from "echarts";
 interface EChartsWrapperProps {
   option: echarts.EChartsOption;
   style?: React.CSSProperties;
+  height?: string;
   className?: string;
   loading?: boolean;
+  onEvents?: Record<string, (params: any) => void>;
 }
 
 export default function EChartsWrapper({
   option,
   style,
+  height,
   className,
   loading = false,
+  onEvents,
 }: EChartsWrapperProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
@@ -46,6 +50,14 @@ export default function EChartsWrapper({
       );
     }
 
+    // Bind event handlers
+    if (onEvents && chartInstance.current) {
+      Object.entries(onEvents).forEach(([event, handler]) => {
+        chartInstance.current?.off(event);
+        chartInstance.current?.on(event, handler);
+      });
+    }
+
     const handleResize = () => {
       chartInstance.current?.resize();
     };
@@ -55,7 +67,7 @@ export default function EChartsWrapper({
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [option, loading]);
+  }, [option, loading, onEvents]);
 
   useEffect(() => {
     return () => {
@@ -67,7 +79,7 @@ export default function EChartsWrapper({
   return (
     <div
       ref={chartRef}
-      style={{ width: "100%", height: "300px", ...style }}
+      style={{ width: "100%", height: height || "300px", ...style }}
       className={className}
     />
   );

@@ -18,6 +18,17 @@ class TacticalAnalyticsEngine:
         self.pitch_type = pitch_type
         self.pitch = Pitch(pitch_type="custom", pitch_length=self.PITCH_LENGTH, pitch_width=self.PITCH_WIDTH)
 
+    def calculate_xg(self, distance: float, angle_degrees: float) -> float:
+        """Calculates expected goals (xG) using a documented baseline logistic regression model:
+        logit = -1.50 - (0.10 * distance) + (1.25 * angle_in_radians)
+        xG = 1 / (1 + exp(-logit))
+        Constrained between 0.01 and 0.99.
+        """
+        angle_rad = math.radians(angle_degrees)
+        logit = -1.50 - 0.10 * distance + 1.25 * angle_rad
+        xg = 1.0 / (1.0 + math.exp(-logit))
+        return round(min(0.99, max(0.01, xg)), 2)
+
     def calculate_distance_and_angle(self, x: float, y: float) -> Tuple[float, float]:
         """Calculates distance (meters) to goal center (105, 34) and shooting angle (degrees)."""
         goal_x = self.PITCH_LENGTH
@@ -116,16 +127,58 @@ class TacticalAnalyticsEngine:
         player_positions: List[Dict[str, Any]],
         pass_connections: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        """Constructs a passing network graph with average player nodes and weighted edges."""
+        """Constructs a passing network graph with average player nodes and weighted edges using NetworkX."""
+        import networkx as nx
+
+        G = nx.DiGraph()
+
+        # Add nodes to NetworkX graph
+        for p in player_positions:
+            pid = str(p.get("player_id"))
+            G.add_node(
+                pid,
+                player_name=p.get("player_name"),
+                jersey_number=p.get("jersey_number"),
+                avg_x=round(float(p.get("avg_x", 50.0)), 1),
+                avg_y=round(float(p.get("avg_y", 34.0)), 1),
+                touches=p.get("touches", 1),
+            )
+
+        # Add directed weighted edges
+        for c in pass_connections:
+            passer = str(c.get("passer_id"))
+            recipient = str(c.get("recipient_id"))
+            count = int(c.get("pass_count", 1))
+            if passer in G and recipient in G:
+                G.add_edge(passer, recipient, weight=count)
+
+        # Calculate NetworkX metrics
+        degree_centrality = nx.degree_centrality(G) if len(G) > 0 else {}
+        in_degree_centrality = nx.in_degree_centrality(G) if len(G) > 0 else {}
+        out_degree_centrality = nx.out_degree_centrality(G) if len(G) > 0 else {}
+        n = len(player_positions)
+        potential_undirected = n * (n - 1) / 2 if n > 1 else 1
+        density = round(len(edges_count := pass_connections) / potential_undirected, 2)
+        directed_density = round(nx.density(G), 3) if len(G) > 1 else 0.0
+
         nodes = []
         for p in player_positions:
+            pid = str(p.get("player_id"))
+            in_deg = G.in_degree(pid, weight="weight") if pid in G else 0
+            out_deg = G.out_degree(pid, weight="weight") if pid in G else 0
+            weighted_deg = in_deg + out_deg
+
             nodes.append({
-                "player_id": p.get("player_id"),
+                "player_id": pid,
                 "player_name": p.get("player_name"),
                 "jersey_number": p.get("jersey_number"),
                 "avg_x": round(float(p.get("avg_x", 50.0)), 1),
                 "avg_y": round(float(p.get("avg_y", 34.0)), 1),
                 "touches": p.get("touches", 1),
+                "in_degree": in_deg,
+                "out_degree": out_deg,
+                "weighted_degree": weighted_deg,
+                "degree_centrality": round(degree_centrality.get(pid, 0.0), 3),
             })
 
         edges = []
@@ -138,15 +191,11 @@ class TacticalAnalyticsEngine:
                 "pass_count": int(c.get("pass_count", 1)),
             })
 
-        # Calculate network density: edges / potential edges
-        n = len(nodes)
-        potential_edges = n * (n - 1) / 2 if n > 1 else 1
-        density = safe_divide(len(edges), potential_edges)
-
         return {
             "nodes_count": len(nodes),
             "edges_count": len(edges),
             "network_density": density,
+            "degree_centrality": {k: round(v, 3) for k, v in degree_centrality.items()},
             "nodes": nodes,
             "edges": edges,
         }

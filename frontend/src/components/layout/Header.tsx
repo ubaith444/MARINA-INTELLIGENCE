@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { fetchHealth } from "@/lib/api";
-import { Activity, ShieldCheck, ChevronDown, RefreshCw } from "lucide-react";
+import { Activity, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface HeaderProps {
   title?: string;
@@ -29,51 +29,51 @@ export default function Header({ title, subtitle }: HeaderProps) {
   }, []);
 
   return (
-    <header className="h-16 px-6 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between sticky top-0 z-40">
+    <header className="h-16 px-6 bg-[#FFFFFF] border-b border-[#E2EAE3] flex items-center justify-between sticky top-0 z-30 shadow-[0_1px_2px_rgba(38,51,43,0.03)]">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-sm font-bold text-slate-100 tracking-tight">
+        <h1 className="text-sm font-bold text-[#26332B] tracking-tight">
           {title || "Chennaiyin FC Performance Intelligence"}
         </h1>
-        {subtitle && <p className="text-[11px] text-slate-400 font-medium">{subtitle}</p>}
+        {subtitle && <p className="text-[11px] text-[#718078] font-medium">{subtitle}</p>}
       </div>
 
       {/* Right Controls: Season Selector & Health Indicator */}
-      <div className="flex items-center space-x-3.5">
+      <div className="flex items-center space-x-3">
         {/* Season Selector */}
-        <div className="flex items-center space-x-1.5 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs">
-          <span className="text-slate-400 font-medium text-[11px]">Season:</span>
+        <div className="flex items-center space-x-1.5 bg-[#F4F8F4] border border-[#E2EAE3] rounded-lg px-2.5 py-1 text-xs">
+          <span className="text-[#718078] font-medium text-[11px]">Season:</span>
           <select
             value={selectedSeason}
             onChange={(e) => setSelectedSeason(e.target.value)}
-            className="bg-transparent text-slate-200 font-semibold text-xs focus:outline-none cursor-pointer"
+            className="bg-transparent text-[#26332B] font-semibold text-xs focus:outline-none cursor-pointer"
           >
-            <option value="2026–27" className="bg-slate-900 text-slate-200">
+            <option value="2026–27" className="bg-[#FFFFFF] text-[#26332B]">
               ISL 2026–27 (Active)
             </option>
-            <option value="2025–26" className="bg-slate-900 text-slate-200">
+            <option value="2025–26" className="bg-[#FFFFFF] text-[#26332B]">
               ISL 2025–26 (Archive)
             </option>
           </select>
         </div>
 
         {/* Backend Status Badge */}
-        <div className="flex items-center space-x-2 bg-slate-900/90 border border-slate-800 px-3 py-1 rounded-lg text-xs font-mono">
+        <div className="flex items-center space-x-2 bg-[#F4F8F4] border border-[#E2EAE3] px-3 py-1 rounded-lg text-xs font-mono">
           <span
             className={`w-2 h-2 rounded-full ${
               isBackendHealthy === true
-                ? "bg-emerald-400 shadow-sm shadow-emerald-400/50"
+                ? "bg-[#246B45]"
                 : isBackendHealthy === false
-                ? "bg-amber-400"
-                : "bg-slate-500 animate-pulse"
+                ? "bg-[#D9A441]"
+                : "bg-[#718078] animate-pulse"
             }`}
           />
-          <span className="text-[11px] text-slate-300">
+          <span className="text-[11px] font-medium text-[#26332B]">
             {isBackendHealthy === true
-              ? "API Connected"
+              ? "Verified API Feed"
               : isBackendHealthy === false
-              ? "API Offline (Mock/Demo)"
-              : "Checking API..."}
+              ? "API Offline (Cached)"
+              : "Connecting..."}
           </span>
         </div>
       </div>

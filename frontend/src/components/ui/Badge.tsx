@@ -3,7 +3,7 @@ import { clsx } from "clsx";
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: "blue" | "green" | "amber" | "rose" | "slate" | "form-w" | "form-d" | "form-l";
+  variant?: "blue" | "green" | "amber" | "rose" | "slate" | "form-w" | "form-d" | "form-l" | "verified" | "neutral" | "success" | "default";
   size?: "sm" | "md";
   className?: string;
 }
@@ -14,16 +14,23 @@ export default function Badge({
   size = "sm",
   className,
 }: BadgeProps) {
+  const normalizedVariant =
+    variant === "verified" || variant === "success"
+      ? "green"
+      : variant === "neutral" || variant === "default"
+      ? "slate"
+      : variant;
+
   const variantStyles = {
-    blue: "bg-blue-950/80 text-blue-300 border-blue-800/60",
-    green: "bg-emerald-950/80 text-emerald-300 border-emerald-800/60",
-    amber: "bg-amber-950/80 text-amber-300 border-amber-800/60",
-    rose: "bg-rose-950/80 text-rose-300 border-rose-800/60",
-    slate: "bg-slate-900 text-slate-300 border-slate-800",
-    "form-w": "bg-emerald-600/90 text-white font-bold border-emerald-500",
-    "form-d": "bg-amber-600/90 text-white font-bold border-amber-500",
-    "form-l": "bg-rose-600/90 text-white font-bold border-rose-500",
-  }[variant];
+    green: "bg-[#E6F0E7] text-[#174B32] border-[#C3DEC7] font-semibold",
+    blue: "bg-[#E8F0FE] text-[#003399] border-[#C2D6FD] font-semibold",
+    amber: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A] font-semibold",
+    rose: "bg-[#FEE2E2] text-[#991B1B] border-[#FECACA] font-semibold",
+    slate: "bg-[#F4F8F4] text-[#26332B] border-[#E2EAE3]",
+    "form-w": "bg-[#246B45] text-white font-bold border-[#174B32]",
+    "form-d": "bg-[#D9A441] text-white font-bold border-[#B45309]",
+    "form-l": "bg-[#C65B56] text-white font-bold border-[#991B1B]",
+  }[normalizedVariant];
 
   const sizeStyles = {
     sm: "px-2 py-0.5 text-[10px]",
